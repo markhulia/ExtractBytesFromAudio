@@ -1,67 +1,44 @@
-import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
-
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class AudioFiles {
-	public static void main(String[] args) {
-		String file = "button-2.wav";
-		AudioFiles afiles = new AudioFiles();
-		byte[] data1 = afiles.readAudioFileData(file);
-		byte[] data2 = afiles.readWAVAudioFileData(file);
+	public static void main(String[] args) throws IOException {
+		FileWriter fw = new FileWriter("jora.txt");
 
-		System.out.println("Start");
-		for (int i = 0; i < 1000; i++) {
+		double[] result = null;
+
+		try {
+			File file = new File("jora.pcm");
+			InputStream in = new FileInputStream(file);
+			int bufferSize = (int) (file.length() / 2);
+
+			result = new double[bufferSize];
+
+			DataInputStream is = new DataInputStream(in);
+
+			for (int i = 0; i < bufferSize; i++) {
+				result[i] = is.readShort() / 32768.0;
+			}
+
+		} catch (FileNotFoundException e) {
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		for (int i = 0; i < result.length; i++) {
 			for (int z = 0; z < 10; z++) {
-				System.out.print(data1[i] + " ");
+				fw.write(result[i] + "\n");
+				System.out.print(result[i] + " ");
 			}
 			System.out.println();
 		}
-
-		System.out.format("data len: %d\n", data1.length);
-		System.out.format("data len: %d\n", data2.length);
-		System.out.format("diff len: %d\n", data2.length - data1.length);
+		// return result;
 	}
 
-	public byte[] readAudioFileData(final String filePath) {
-		byte[] data = null;
-		try {
-			final ByteArrayOutputStream baout = new ByteArrayOutputStream();
-			final File file = new File(filePath);
-			final AudioInputStream audioInputStream = AudioSystem
-					.getAudioInputStream(file);
-
-			byte[] buffer = new byte[4096];
-			int c;
-			while ((c = audioInputStream.read(buffer, 0, buffer.length)) != -1) {
-				baout.write(buffer, 0, c);
-			}
-			audioInputStream.close();
-			baout.close();
-			data = baout.toByteArray();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return data;
-	}
-
-	public byte[] readWAVAudioFileData(final String filePath) {
-		byte[] data = null;
-		try {
-			final ByteArrayOutputStream baout = new ByteArrayOutputStream();
-			final AudioInputStream audioInputStream = AudioSystem
-					.getAudioInputStream(new File(filePath));
-
-			AudioSystem.write(audioInputStream, AudioFileFormat.Type.WAVE,
-					baout);
-			audioInputStream.close();
-			baout.close();
-			data = baout.toByteArray();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return data;
-	}
 }
